@@ -5,3899 +5,1118 @@
  * AgriSmart API
  * OpenAPI spec version: 0.1.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  MutationFunction,
-  QueryFunction,
-  QueryKey,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
-import type {
-  BulkUpdateResult,
-  CommunityPost,
-  CommunityPostInput,
-  Crop,
-  CropInput,
-  CropUpdate,
-  DashboardSummary,
-  DiaryEntry,
-  DiaryEntryInput,
-  DiseaseDetection,
-  DiseaseDetectionInput,
-  ErrorResponse,
-  Expense,
-  ExpenseInput,
-  ExpenseSummary,
-  GeminiConversation,
-  GeminiConversationInput,
-  GeminiConversationWithMessages,
-  GeminiError,
-  GeminiImageInput,
-  GeminiImageOutput,
-  GeminiMessage,
-  GeminiMessageInput,
-  GovernmentScheme,
-  GovernmentSchemeInput,
-  GovernmentSchemeUpdate,
-  HealthStatus,
-  IrrigationSchedule,
-  IrrigationScheduleInput,
-  IrrigationScheduleUpdate,
-  LandListing,
-  LandListingInput,
-  LandListingUpdate,
-  MarketPrice,
-  MarketPriceInput,
-  MarketSummary,
-  Notification,
-  SoilAnalysis,
-  SoilAnalysisInput
-} from './api.schemas';
-
-import { customFetch } from '../custom-fetch';
-import type { ErrorType , BodyType } from '../custom-fetch';
-
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-      type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
-  const result = { queryKey } as T & { queryKey: K };
-  for (const key of Object.keys(query)) {
-    // The explicit queryKey always wins, matching the previous
-    // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
-    Object.defineProperty(result, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => (query as Record<string, unknown>)[key],
-    });
-  }
-  return result;
-};
-
-export const getHealthCheckUrl = () => {
-
-
-
-
-  return `/api/healthz`
-}
-
-/**
- * @summary Health check
- */
-export const healthCheck = async ( options?: RequestInit): Promise<HealthStatus> => {
-
-  return customFetch<HealthStatus>(getHealthCheckUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getHealthCheckQueryKey = () => {
-    return [
-    `/api/healthz`
-    ] as const;
-    }
-
-
-export const getHealthCheckQueryOptions = <TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getHealthCheckQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheck>>> = ({ signal }) => healthCheck({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type HealthCheckQueryResult = NonNullable<Awaited<ReturnType<typeof healthCheck>>>
-export type HealthCheckQueryError = ErrorType<unknown>
+import * as zod from 'zod';
 
 
 /**
  * @summary Health check
  */
-
-export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getHealthCheckQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getGetDashboardUrl = () => {
-
-
-
-
-  return `/api/dashboard`
-}
-
-/**
- * @summary Get dashboard summary
- */
-export const getDashboard = async ( options?: RequestInit): Promise<DashboardSummary> => {
-
-  return customFetch<DashboardSummary>(getGetDashboardUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetDashboardQueryKey = () => {
-    return [
-    `/api/dashboard`
-    ] as const;
-    }
-
-
-export const getGetDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getDashboard>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetDashboardQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDashboard>>> = ({ signal }) => getDashboard({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getDashboard>>>
-export type GetDashboardQueryError = ErrorType<unknown>
+export const HealthCheckResponse = zod.object({
+  "status": zod.string()
+})
 
 
 /**
  * @summary Get dashboard summary
  */
-
-export function useGetDashboard<TData = Awaited<ReturnType<typeof getDashboard>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetDashboardQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getListCropsUrl = () => {
-
-
-
-
-  return `/api/crops`
-}
-
-/**
- * @summary List all crops for the farm
- */
-export const listCrops = async ( options?: RequestInit): Promise<Crop[]> => {
-
-  return customFetch<Crop[]>(getListCropsUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListCropsQueryKey = () => {
-    return [
-    `/api/crops`
-    ] as const;
-    }
-
-
-export const getListCropsQueryOptions = <TData = Awaited<ReturnType<typeof listCrops>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCrops>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListCropsQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCrops>>> = ({ signal }) => listCrops({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCrops>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListCropsQueryResult = NonNullable<Awaited<ReturnType<typeof listCrops>>>
-export type ListCropsQueryError = ErrorType<unknown>
+export const GetDashboardResponse = zod.object({
+  "totalCrops": zod.number(),
+  "activeIrrigations": zod.number(),
+  "pendingNotifications": zod.number(),
+  "recentDetections": zod.array(zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "imageBase64": zod.string().nullish(),
+  "diseaseName": zod.string().nullish(),
+  "confidence": zod.number().nullish(),
+  "severity": zod.string().nullish(),
+  "symptoms": zod.string().nullish(),
+  "organicTreatment": zod.string().nullish(),
+  "chemicalTreatment": zod.string().nullish(),
+  "fertilizerRecommendation": zod.string().nullish(),
+  "preventiveMeasures": zod.string().nullish(),
+  "recoveryTime": zod.string().nullish(),
+  "aiResponse": zod.string().nullish(),
+  "aiResponseTelugu": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})),
+  "topMarketPrices": zod.array(zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "mspPrice": zod.number().nullish(),
+  "marketPrice": zod.number(),
+  "unit": zod.string(),
+  "market": zod.string(),
+  "district": zod.string().nullish(),
+  "state": zod.string().nullish(),
+  "trend": zod.string().nullish(),
+  "date": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})),
+  "monthlyExpenseTotal": zod.number(),
+  "upcomingSchedules": zod.array(zod.object({
+  "id": zod.number(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string(),
+  "scheduledAt": zod.coerce.date(),
+  "durationMinutes": zod.number(),
+  "waterAmount": zod.number().nullish(),
+  "method": zod.string(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+}))
+})
 
 
 /**
  * @summary List all crops for the farm
  */
+export const ListCropsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "variety": zod.string().nullish(),
+  "season": zod.string(),
+  "sowingDate": zod.coerce.date().nullish(),
+  "harvestDate": zod.coerce.date().nullish(),
+  "area": zod.number().nullish(),
+  "areaUnit": zod.string().nullish(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListCropsResponse = zod.array(ListCropsResponseItem)
 
-export function useListCrops<TData = Awaited<ReturnType<typeof listCrops>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCrops>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListCropsQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateCropUrl = () => {
-
-
-
-
-  return `/api/crops`
-}
 
 /**
  * @summary Add a new crop
  */
-export const createCrop = async (cropInput: CropInput, options?: RequestInit): Promise<Crop> => {
+export const CreateCropBody = zod.object({
+  "name": zod.string(),
+  "variety": zod.string().optional(),
+  "season": zod.string(),
+  "sowingDate": zod.coerce.date().optional(),
+  "harvestDate": zod.coerce.date().optional(),
+  "area": zod.number().optional(),
+  "areaUnit": zod.string().optional(),
+  "status": zod.string(),
+  "notes": zod.string().optional()
+})
 
-  return customFetch<Crop>(getCreateCropUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(cropInput)
-  }
-);}
-
-
-
-
-export const getCreateCropMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCrop>>, TError,{data: BodyType<CropInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createCrop>>, TError,{data: BodyType<CropInput>}, TContext> => {
-
-const mutationKey = ['createCrop'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCrop>>, {data: BodyType<CropInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createCrop(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateCropMutationResult = NonNullable<Awaited<ReturnType<typeof createCrop>>>
-    export type CreateCropMutationBody = BodyType<CropInput>
-    export type CreateCropMutationError = ErrorType<unknown>
-
-    /**
- * @summary Add a new crop
- */
-export const useCreateCrop = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCrop>>, TError,{data: BodyType<CropInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createCrop>>,
-        TError,
-        {data: BodyType<CropInput>},
-        TContext
-      > => {
-      return useMutation(getCreateCropMutationOptions(options));
-    }
-
-export const getGetCropUrl = (id: number,) => {
-
-
-
-
-  return `/api/crops/${id}`
-}
-
-/**
- * @summary Get crop by ID
- */
-export const getCrop = async (id: number, options?: RequestInit): Promise<Crop> => {
-
-  return customFetch<Crop>(getGetCropUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetCropQueryKey = (id: number,) => {
-    return [
-    `/api/crops/${id}`
-    ] as const;
-    }
-
-
-export const getGetCropQueryOptions = <TData = Awaited<ReturnType<typeof getCrop>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCrop>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCropQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCrop>>> = ({ signal }) => getCrop(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCrop>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetCropQueryResult = NonNullable<Awaited<ReturnType<typeof getCrop>>>
-export type GetCropQueryError = ErrorType<ErrorResponse>
+export const CreateCropResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "variety": zod.string().nullish(),
+  "season": zod.string(),
+  "sowingDate": zod.coerce.date().nullish(),
+  "harvestDate": zod.coerce.date().nullish(),
+  "area": zod.number().nullish(),
+  "areaUnit": zod.string().nullish(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary Get crop by ID
  */
+export const GetCropParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-export function useGetCrop<TData = Awaited<ReturnType<typeof getCrop>>, TError = ErrorType<ErrorResponse>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCrop>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const GetCropResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "variety": zod.string().nullish(),
+  "season": zod.string(),
+  "sowingDate": zod.coerce.date().nullish(),
+  "harvestDate": zod.coerce.date().nullish(),
+  "area": zod.number().nullish(),
+  "areaUnit": zod.string().nullish(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetCropQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getUpdateCropUrl = (id: number,) => {
-
-
-
-
-  return `/api/crops/${id}`
-}
 
 /**
  * @summary Update a crop
  */
-export const updateCrop = async (id: number,
-    cropUpdate: CropUpdate, options?: RequestInit): Promise<Crop> => {
+export const UpdateCropParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<Crop>(getUpdateCropUrl(id),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(cropUpdate)
-  }
-);}
+export const UpdateCropBody = zod.object({
+  "name": zod.string().optional(),
+  "variety": zod.string().optional(),
+  "season": zod.string().optional(),
+  "sowingDate": zod.coerce.date().optional(),
+  "harvestDate": zod.coerce.date().optional(),
+  "area": zod.number().optional(),
+  "areaUnit": zod.string().optional(),
+  "status": zod.string().optional(),
+  "notes": zod.string().optional()
+})
 
+export const UpdateCropResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "variety": zod.string().nullish(),
+  "season": zod.string(),
+  "sowingDate": zod.coerce.date().nullish(),
+  "harvestDate": zod.coerce.date().nullish(),
+  "area": zod.number().nullish(),
+  "areaUnit": zod.string().nullish(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
-
-
-export const getUpdateCropMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCrop>>, TError,{id: number;data: BodyType<CropUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateCrop>>, TError,{id: number;data: BodyType<CropUpdate>}, TContext> => {
-
-const mutationKey = ['updateCrop'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCrop>>, {id: number;data: BodyType<CropUpdate>}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  updateCrop(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateCropMutationResult = NonNullable<Awaited<ReturnType<typeof updateCrop>>>
-    export type UpdateCropMutationBody = BodyType<CropUpdate>
-    export type UpdateCropMutationError = ErrorType<unknown>
-
-    /**
- * @summary Update a crop
- */
-export const useUpdateCrop = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCrop>>, TError,{id: number;data: BodyType<CropUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateCrop>>,
-        TError,
-        {id: number;data: BodyType<CropUpdate>},
-        TContext
-      > => {
-      return useMutation(getUpdateCropMutationOptions(options));
-    }
-
-export const getDeleteCropUrl = (id: number,) => {
-
-
-
-
-  return `/api/crops/${id}`
-}
 
 /**
  * @summary Delete a crop
  */
-export const deleteCrop = async (id: number, options?: RequestInit): Promise<void> => {
+export const DeleteCropParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<void>(getDeleteCropUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-export const getDeleteCropMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCrop>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteCrop>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteCrop'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCrop>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteCrop(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteCropMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCrop>>>
-
-    export type DeleteCropMutationError = ErrorType<unknown>
-
-    /**
- * @summary Delete a crop
- */
-export const useDeleteCrop = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCrop>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteCrop>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteCropMutationOptions(options));
-    }
-
-export const getListDiseaseDetectionsUrl = () => {
-
-
-
-
-  return `/api/disease/detections`
-}
-
-/**
- * @summary List disease detection history
- */
-export const listDiseaseDetections = async ( options?: RequestInit): Promise<DiseaseDetection[]> => {
-
-  return customFetch<DiseaseDetection[]>(getListDiseaseDetectionsUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListDiseaseDetectionsQueryKey = () => {
-    return [
-    `/api/disease/detections`
-    ] as const;
-    }
-
-
-export const getListDiseaseDetectionsQueryOptions = <TData = Awaited<ReturnType<typeof listDiseaseDetections>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDiseaseDetections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListDiseaseDetectionsQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDiseaseDetections>>> = ({ signal }) => listDiseaseDetections({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDiseaseDetections>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListDiseaseDetectionsQueryResult = NonNullable<Awaited<ReturnType<typeof listDiseaseDetections>>>
-export type ListDiseaseDetectionsQueryError = ErrorType<unknown>
+export const DeleteCropResponse = zod.void()
 
 
 /**
  * @summary List disease detection history
  */
+export const ListDiseaseDetectionsResponseItem = zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "imageBase64": zod.string().nullish(),
+  "diseaseName": zod.string().nullish(),
+  "confidence": zod.number().nullish(),
+  "severity": zod.string().nullish(),
+  "symptoms": zod.string().nullish(),
+  "organicTreatment": zod.string().nullish(),
+  "chemicalTreatment": zod.string().nullish(),
+  "fertilizerRecommendation": zod.string().nullish(),
+  "preventiveMeasures": zod.string().nullish(),
+  "recoveryTime": zod.string().nullish(),
+  "aiResponse": zod.string().nullish(),
+  "aiResponseTelugu": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListDiseaseDetectionsResponse = zod.array(ListDiseaseDetectionsResponseItem)
 
-export function useListDiseaseDetections<TData = Awaited<ReturnType<typeof listDiseaseDetections>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDiseaseDetections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListDiseaseDetectionsQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateDiseaseDetectionUrl = () => {
-
-
-
-
-  return `/api/disease/detections`
-}
 
 /**
  * @summary Analyze crop image for disease using Gemini Vision
  */
-export const createDiseaseDetection = async (diseaseDetectionInput: DiseaseDetectionInput, options?: RequestInit): Promise<DiseaseDetection> => {
+export const CreateDiseaseDetectionBody = zod.object({
+  "cropName": zod.string(),
+  "imageBase64": zod.string(),
+  "language": zod.string().optional()
+})
 
-  return customFetch<DiseaseDetection>(getCreateDiseaseDetectionUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(diseaseDetectionInput)
-  }
-);}
-
-
-
-
-export const getCreateDiseaseDetectionMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDiseaseDetection>>, TError,{data: BodyType<DiseaseDetectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createDiseaseDetection>>, TError,{data: BodyType<DiseaseDetectionInput>}, TContext> => {
-
-const mutationKey = ['createDiseaseDetection'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDiseaseDetection>>, {data: BodyType<DiseaseDetectionInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createDiseaseDetection(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateDiseaseDetectionMutationResult = NonNullable<Awaited<ReturnType<typeof createDiseaseDetection>>>
-    export type CreateDiseaseDetectionMutationBody = BodyType<DiseaseDetectionInput>
-    export type CreateDiseaseDetectionMutationError = ErrorType<unknown>
-
-    /**
- * @summary Analyze crop image for disease using Gemini Vision
- */
-export const useCreateDiseaseDetection = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDiseaseDetection>>, TError,{data: BodyType<DiseaseDetectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createDiseaseDetection>>,
-        TError,
-        {data: BodyType<DiseaseDetectionInput>},
-        TContext
-      > => {
-      return useMutation(getCreateDiseaseDetectionMutationOptions(options));
-    }
-
-export const getGetDiseaseDetectionUrl = (id: number,) => {
-
-
-
-
-  return `/api/disease/detections/${id}`
-}
-
-/**
- * @summary Get detection result
- */
-export const getDiseaseDetection = async (id: number, options?: RequestInit): Promise<DiseaseDetection> => {
-
-  return customFetch<DiseaseDetection>(getGetDiseaseDetectionUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetDiseaseDetectionQueryKey = (id: number,) => {
-    return [
-    `/api/disease/detections/${id}`
-    ] as const;
-    }
-
-
-export const getGetDiseaseDetectionQueryOptions = <TData = Awaited<ReturnType<typeof getDiseaseDetection>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDiseaseDetection>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetDiseaseDetectionQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDiseaseDetection>>> = ({ signal }) => getDiseaseDetection(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDiseaseDetection>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetDiseaseDetectionQueryResult = NonNullable<Awaited<ReturnType<typeof getDiseaseDetection>>>
-export type GetDiseaseDetectionQueryError = ErrorType<ErrorResponse>
+export const CreateDiseaseDetectionResponse = zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "imageBase64": zod.string().nullish(),
+  "diseaseName": zod.string().nullish(),
+  "confidence": zod.number().nullish(),
+  "severity": zod.string().nullish(),
+  "symptoms": zod.string().nullish(),
+  "organicTreatment": zod.string().nullish(),
+  "chemicalTreatment": zod.string().nullish(),
+  "fertilizerRecommendation": zod.string().nullish(),
+  "preventiveMeasures": zod.string().nullish(),
+  "recoveryTime": zod.string().nullish(),
+  "aiResponse": zod.string().nullish(),
+  "aiResponseTelugu": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary Get detection result
  */
+export const GetDiseaseDetectionParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-export function useGetDiseaseDetection<TData = Awaited<ReturnType<typeof getDiseaseDetection>>, TError = ErrorType<ErrorResponse>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDiseaseDetection>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetDiseaseDetectionQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getListMarketPricesUrl = () => {
-
-
-
-
-  return `/api/market/prices`
-}
-
-/**
- * @summary List MSP and market prices
- */
-export const listMarketPrices = async ( options?: RequestInit): Promise<MarketPrice[]> => {
-
-  return customFetch<MarketPrice[]>(getListMarketPricesUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListMarketPricesQueryKey = () => {
-    return [
-    `/api/market/prices`
-    ] as const;
-    }
-
-
-export const getListMarketPricesQueryOptions = <TData = Awaited<ReturnType<typeof listMarketPrices>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMarketPrices>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListMarketPricesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMarketPrices>>> = ({ signal }) => listMarketPrices({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMarketPrices>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListMarketPricesQueryResult = NonNullable<Awaited<ReturnType<typeof listMarketPrices>>>
-export type ListMarketPricesQueryError = ErrorType<unknown>
+export const GetDiseaseDetectionResponse = zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "imageBase64": zod.string().nullish(),
+  "diseaseName": zod.string().nullish(),
+  "confidence": zod.number().nullish(),
+  "severity": zod.string().nullish(),
+  "symptoms": zod.string().nullish(),
+  "organicTreatment": zod.string().nullish(),
+  "chemicalTreatment": zod.string().nullish(),
+  "fertilizerRecommendation": zod.string().nullish(),
+  "preventiveMeasures": zod.string().nullish(),
+  "recoveryTime": zod.string().nullish(),
+  "aiResponse": zod.string().nullish(),
+  "aiResponseTelugu": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary List MSP and market prices
  */
+export const ListMarketPricesResponseItem = zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "mspPrice": zod.number().nullish(),
+  "marketPrice": zod.number(),
+  "unit": zod.string(),
+  "market": zod.string(),
+  "district": zod.string().nullish(),
+  "state": zod.string().nullish(),
+  "trend": zod.string().nullish(),
+  "date": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})
+export const ListMarketPricesResponse = zod.array(ListMarketPricesResponseItem)
 
-export function useListMarketPrices<TData = Awaited<ReturnType<typeof listMarketPrices>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMarketPrices>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListMarketPricesQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateMarketPriceUrl = () => {
-
-
-
-
-  return `/api/market/prices`
-}
 
 /**
  * @summary Add a market price entry
  */
-export const createMarketPrice = async (marketPriceInput: MarketPriceInput, options?: RequestInit): Promise<MarketPrice> => {
+export const CreateMarketPriceBody = zod.object({
+  "cropName": zod.string(),
+  "mspPrice": zod.number().optional(),
+  "marketPrice": zod.number(),
+  "unit": zod.string(),
+  "market": zod.string(),
+  "district": zod.string().optional(),
+  "state": zod.string().optional(),
+  "trend": zod.string().optional(),
+  "date": zod.coerce.date()
+})
 
-  return customFetch<MarketPrice>(getCreateMarketPriceUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(marketPriceInput)
-  }
-);}
-
-
-
-
-export const getCreateMarketPriceMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMarketPrice>>, TError,{data: BodyType<MarketPriceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createMarketPrice>>, TError,{data: BodyType<MarketPriceInput>}, TContext> => {
-
-const mutationKey = ['createMarketPrice'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMarketPrice>>, {data: BodyType<MarketPriceInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createMarketPrice(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateMarketPriceMutationResult = NonNullable<Awaited<ReturnType<typeof createMarketPrice>>>
-    export type CreateMarketPriceMutationBody = BodyType<MarketPriceInput>
-    export type CreateMarketPriceMutationError = ErrorType<unknown>
-
-    /**
- * @summary Add a market price entry
- */
-export const useCreateMarketPrice = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMarketPrice>>, TError,{data: BodyType<MarketPriceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createMarketPrice>>,
-        TError,
-        {data: BodyType<MarketPriceInput>},
-        TContext
-      > => {
-      return useMutation(getCreateMarketPriceMutationOptions(options));
-    }
-
-export const getGetMarketSummaryUrl = () => {
-
-
-
-
-  return `/api/market/summary`
-}
-
-/**
- * @summary Get market summary with top movers and recommendations
- */
-export const getMarketSummary = async ( options?: RequestInit): Promise<MarketSummary> => {
-
-  return customFetch<MarketSummary>(getGetMarketSummaryUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetMarketSummaryQueryKey = () => {
-    return [
-    `/api/market/summary`
-    ] as const;
-    }
-
-
-export const getGetMarketSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getMarketSummary>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMarketSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetMarketSummaryQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMarketSummary>>> = ({ signal }) => getMarketSummary({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMarketSummary>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetMarketSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getMarketSummary>>>
-export type GetMarketSummaryQueryError = ErrorType<unknown>
+export const CreateMarketPriceResponse = zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "mspPrice": zod.number().nullish(),
+  "marketPrice": zod.number(),
+  "unit": zod.string(),
+  "market": zod.string(),
+  "district": zod.string().nullish(),
+  "state": zod.string().nullish(),
+  "trend": zod.string().nullish(),
+  "date": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary Get market summary with top movers and recommendations
  */
-
-export function useGetMarketSummary<TData = Awaited<ReturnType<typeof getMarketSummary>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMarketSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetMarketSummaryQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getListIrrigationSchedulesUrl = () => {
-
-
-
-
-  return `/api/irrigation/schedules`
-}
-
-/**
- * @summary List irrigation schedules
- */
-export const listIrrigationSchedules = async ( options?: RequestInit): Promise<IrrigationSchedule[]> => {
-
-  return customFetch<IrrigationSchedule[]>(getListIrrigationSchedulesUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListIrrigationSchedulesQueryKey = () => {
-    return [
-    `/api/irrigation/schedules`
-    ] as const;
-    }
-
-
-export const getListIrrigationSchedulesQueryOptions = <TData = Awaited<ReturnType<typeof listIrrigationSchedules>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listIrrigationSchedules>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListIrrigationSchedulesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listIrrigationSchedules>>> = ({ signal }) => listIrrigationSchedules({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listIrrigationSchedules>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListIrrigationSchedulesQueryResult = NonNullable<Awaited<ReturnType<typeof listIrrigationSchedules>>>
-export type ListIrrigationSchedulesQueryError = ErrorType<unknown>
+export const GetMarketSummaryResponse = zod.object({
+  "topPrices": zod.array(zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "mspPrice": zod.number().nullish(),
+  "marketPrice": zod.number(),
+  "unit": zod.string(),
+  "market": zod.string(),
+  "district": zod.string().nullish(),
+  "state": zod.string().nullish(),
+  "trend": zod.string().nullish(),
+  "date": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})),
+  "trending": zod.array(zod.object({
+  "id": zod.number(),
+  "cropName": zod.string(),
+  "mspPrice": zod.number().nullish(),
+  "marketPrice": zod.number(),
+  "unit": zod.string(),
+  "market": zod.string(),
+  "district": zod.string().nullish(),
+  "state": zod.string().nullish(),
+  "trend": zod.string().nullish(),
+  "date": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})),
+  "averageMsp": zod.number(),
+  "lastUpdated": zod.coerce.date()
+})
 
 
 /**
  * @summary List irrigation schedules
  */
+export const ListIrrigationSchedulesResponseItem = zod.object({
+  "id": zod.number(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string(),
+  "scheduledAt": zod.coerce.date(),
+  "durationMinutes": zod.number(),
+  "waterAmount": zod.number().nullish(),
+  "method": zod.string(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListIrrigationSchedulesResponse = zod.array(ListIrrigationSchedulesResponseItem)
 
-export function useListIrrigationSchedules<TData = Awaited<ReturnType<typeof listIrrigationSchedules>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listIrrigationSchedules>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListIrrigationSchedulesQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateIrrigationScheduleUrl = () => {
-
-
-
-
-  return `/api/irrigation/schedules`
-}
 
 /**
  * @summary Create irrigation schedule
  */
-export const createIrrigationSchedule = async (irrigationScheduleInput: IrrigationScheduleInput, options?: RequestInit): Promise<IrrigationSchedule> => {
+export const CreateIrrigationScheduleBody = zod.object({
+  "cropId": zod.number().optional(),
+  "cropName": zod.string(),
+  "scheduledAt": zod.coerce.date(),
+  "durationMinutes": zod.number(),
+  "waterAmount": zod.number().optional(),
+  "method": zod.string(),
+  "status": zod.string(),
+  "notes": zod.string().optional()
+})
 
-  return customFetch<IrrigationSchedule>(getCreateIrrigationScheduleUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(irrigationScheduleInput)
-  }
-);}
+export const CreateIrrigationScheduleResponse = zod.object({
+  "id": zod.number(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string(),
+  "scheduledAt": zod.coerce.date(),
+  "durationMinutes": zod.number(),
+  "waterAmount": zod.number().nullish(),
+  "method": zod.string(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
-
-
-
-export const getCreateIrrigationScheduleMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createIrrigationSchedule>>, TError,{data: BodyType<IrrigationScheduleInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createIrrigationSchedule>>, TError,{data: BodyType<IrrigationScheduleInput>}, TContext> => {
-
-const mutationKey = ['createIrrigationSchedule'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createIrrigationSchedule>>, {data: BodyType<IrrigationScheduleInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createIrrigationSchedule(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateIrrigationScheduleMutationResult = NonNullable<Awaited<ReturnType<typeof createIrrigationSchedule>>>
-    export type CreateIrrigationScheduleMutationBody = BodyType<IrrigationScheduleInput>
-    export type CreateIrrigationScheduleMutationError = ErrorType<unknown>
-
-    /**
- * @summary Create irrigation schedule
- */
-export const useCreateIrrigationSchedule = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createIrrigationSchedule>>, TError,{data: BodyType<IrrigationScheduleInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createIrrigationSchedule>>,
-        TError,
-        {data: BodyType<IrrigationScheduleInput>},
-        TContext
-      > => {
-      return useMutation(getCreateIrrigationScheduleMutationOptions(options));
-    }
-
-export const getUpdateIrrigationScheduleUrl = (id: number,) => {
-
-
-
-
-  return `/api/irrigation/schedules/${id}`
-}
 
 /**
  * @summary Update irrigation schedule
  */
-export const updateIrrigationSchedule = async (id: number,
-    irrigationScheduleUpdate: IrrigationScheduleUpdate, options?: RequestInit): Promise<IrrigationSchedule> => {
+export const UpdateIrrigationScheduleParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<IrrigationSchedule>(getUpdateIrrigationScheduleUrl(id),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(irrigationScheduleUpdate)
-  }
-);}
+export const UpdateIrrigationScheduleBody = zod.object({
+  "scheduledAt": zod.coerce.date().optional(),
+  "durationMinutes": zod.number().optional(),
+  "waterAmount": zod.number().optional(),
+  "method": zod.string().optional(),
+  "status": zod.string().optional(),
+  "notes": zod.string().optional()
+})
 
+export const UpdateIrrigationScheduleResponse = zod.object({
+  "id": zod.number(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string(),
+  "scheduledAt": zod.coerce.date(),
+  "durationMinutes": zod.number(),
+  "waterAmount": zod.number().nullish(),
+  "method": zod.string(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
-
-
-export const getUpdateIrrigationScheduleMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateIrrigationSchedule>>, TError,{id: number;data: BodyType<IrrigationScheduleUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateIrrigationSchedule>>, TError,{id: number;data: BodyType<IrrigationScheduleUpdate>}, TContext> => {
-
-const mutationKey = ['updateIrrigationSchedule'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateIrrigationSchedule>>, {id: number;data: BodyType<IrrigationScheduleUpdate>}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  updateIrrigationSchedule(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateIrrigationScheduleMutationResult = NonNullable<Awaited<ReturnType<typeof updateIrrigationSchedule>>>
-    export type UpdateIrrigationScheduleMutationBody = BodyType<IrrigationScheduleUpdate>
-    export type UpdateIrrigationScheduleMutationError = ErrorType<unknown>
-
-    /**
- * @summary Update irrigation schedule
- */
-export const useUpdateIrrigationSchedule = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateIrrigationSchedule>>, TError,{id: number;data: BodyType<IrrigationScheduleUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateIrrigationSchedule>>,
-        TError,
-        {id: number;data: BodyType<IrrigationScheduleUpdate>},
-        TContext
-      > => {
-      return useMutation(getUpdateIrrigationScheduleMutationOptions(options));
-    }
-
-export const getDeleteIrrigationScheduleUrl = (id: number,) => {
-
-
-
-
-  return `/api/irrigation/schedules/${id}`
-}
 
 /**
  * @summary Delete irrigation schedule
  */
-export const deleteIrrigationSchedule = async (id: number, options?: RequestInit): Promise<void> => {
+export const DeleteIrrigationScheduleParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<void>(getDeleteIrrigationScheduleUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-export const getDeleteIrrigationScheduleMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteIrrigationSchedule>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteIrrigationSchedule>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteIrrigationSchedule'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteIrrigationSchedule>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteIrrigationSchedule(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteIrrigationScheduleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteIrrigationSchedule>>>
-
-    export type DeleteIrrigationScheduleMutationError = ErrorType<unknown>
-
-    /**
- * @summary Delete irrigation schedule
- */
-export const useDeleteIrrigationSchedule = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteIrrigationSchedule>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteIrrigationSchedule>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteIrrigationScheduleMutationOptions(options));
-    }
-
-export const getListDiaryEntriesUrl = () => {
-
-
-
-
-  return `/api/diary/entries`
-}
-
-/**
- * @summary List farm diary entries
- */
-export const listDiaryEntries = async ( options?: RequestInit): Promise<DiaryEntry[]> => {
-
-  return customFetch<DiaryEntry[]>(getListDiaryEntriesUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListDiaryEntriesQueryKey = () => {
-    return [
-    `/api/diary/entries`
-    ] as const;
-    }
-
-
-export const getListDiaryEntriesQueryOptions = <TData = Awaited<ReturnType<typeof listDiaryEntries>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDiaryEntries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListDiaryEntriesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDiaryEntries>>> = ({ signal }) => listDiaryEntries({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDiaryEntries>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListDiaryEntriesQueryResult = NonNullable<Awaited<ReturnType<typeof listDiaryEntries>>>
-export type ListDiaryEntriesQueryError = ErrorType<unknown>
+export const DeleteIrrigationScheduleResponse = zod.void()
 
 
 /**
  * @summary List farm diary entries
  */
+export const ListDiaryEntriesResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string().nullish(),
+  "weather": zod.string().nullish(),
+  "temperature": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "entryDate": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})
+export const ListDiaryEntriesResponse = zod.array(ListDiaryEntriesResponseItem)
 
-export function useListDiaryEntries<TData = Awaited<ReturnType<typeof listDiaryEntries>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDiaryEntries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListDiaryEntriesQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateDiaryEntryUrl = () => {
-
-
-
-
-  return `/api/diary/entries`
-}
 
 /**
  * @summary Create a diary entry
  */
-export const createDiaryEntry = async (diaryEntryInput: DiaryEntryInput, options?: RequestInit): Promise<DiaryEntry> => {
+export const CreateDiaryEntryBody = zod.object({
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "cropId": zod.number().optional(),
+  "cropName": zod.string().optional(),
+  "weather": zod.string().optional(),
+  "temperature": zod.number().optional(),
+  "imageUrl": zod.string().optional(),
+  "entryDate": zod.coerce.date()
+})
 
-  return customFetch<DiaryEntry>(getCreateDiaryEntryUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(diaryEntryInput)
-  }
-);}
-
-
-
-
-export const getCreateDiaryEntryMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDiaryEntry>>, TError,{data: BodyType<DiaryEntryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createDiaryEntry>>, TError,{data: BodyType<DiaryEntryInput>}, TContext> => {
-
-const mutationKey = ['createDiaryEntry'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDiaryEntry>>, {data: BodyType<DiaryEntryInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createDiaryEntry(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateDiaryEntryMutationResult = NonNullable<Awaited<ReturnType<typeof createDiaryEntry>>>
-    export type CreateDiaryEntryMutationBody = BodyType<DiaryEntryInput>
-    export type CreateDiaryEntryMutationError = ErrorType<unknown>
-
-    /**
- * @summary Create a diary entry
- */
-export const useCreateDiaryEntry = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDiaryEntry>>, TError,{data: BodyType<DiaryEntryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createDiaryEntry>>,
-        TError,
-        {data: BodyType<DiaryEntryInput>},
-        TContext
-      > => {
-      return useMutation(getCreateDiaryEntryMutationOptions(options));
-    }
-
-export const getGetDiaryEntryUrl = (id: number,) => {
-
-
-
-
-  return `/api/diary/entries/${id}`
-}
-
-/**
- * @summary Get diary entry
- */
-export const getDiaryEntry = async (id: number, options?: RequestInit): Promise<DiaryEntry> => {
-
-  return customFetch<DiaryEntry>(getGetDiaryEntryUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetDiaryEntryQueryKey = (id: number,) => {
-    return [
-    `/api/diary/entries/${id}`
-    ] as const;
-    }
-
-
-export const getGetDiaryEntryQueryOptions = <TData = Awaited<ReturnType<typeof getDiaryEntry>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDiaryEntry>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetDiaryEntryQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDiaryEntry>>> = ({ signal }) => getDiaryEntry(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDiaryEntry>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetDiaryEntryQueryResult = NonNullable<Awaited<ReturnType<typeof getDiaryEntry>>>
-export type GetDiaryEntryQueryError = ErrorType<unknown>
+export const CreateDiaryEntryResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string().nullish(),
+  "weather": zod.string().nullish(),
+  "temperature": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "entryDate": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary Get diary entry
  */
+export const GetDiaryEntryParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-export function useGetDiaryEntry<TData = Awaited<ReturnType<typeof getDiaryEntry>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDiaryEntry>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const GetDiaryEntryResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string().nullish(),
+  "weather": zod.string().nullish(),
+  "temperature": zod.number().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "entryDate": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetDiaryEntryQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getDeleteDiaryEntryUrl = (id: number,) => {
-
-
-
-
-  return `/api/diary/entries/${id}`
-}
 
 /**
  * @summary Delete diary entry
  */
-export const deleteDiaryEntry = async (id: number, options?: RequestInit): Promise<void> => {
+export const DeleteDiaryEntryParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<void>(getDeleteDiaryEntryUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-export const getDeleteDiaryEntryMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDiaryEntry>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteDiaryEntry>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteDiaryEntry'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDiaryEntry>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteDiaryEntry(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteDiaryEntryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDiaryEntry>>>
-
-    export type DeleteDiaryEntryMutationError = ErrorType<unknown>
-
-    /**
- * @summary Delete diary entry
- */
-export const useDeleteDiaryEntry = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDiaryEntry>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteDiaryEntry>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteDiaryEntryMutationOptions(options));
-    }
-
-export const getListSchemesUrl = () => {
-
-
-
-
-  return `/api/schemes`
-}
-
-/**
- * @summary List government schemes
- */
-export const listSchemes = async ( options?: RequestInit): Promise<GovernmentScheme[]> => {
-
-  return customFetch<GovernmentScheme[]>(getListSchemesUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListSchemesQueryKey = () => {
-    return [
-    `/api/schemes`
-    ] as const;
-    }
-
-
-export const getListSchemesQueryOptions = <TData = Awaited<ReturnType<typeof listSchemes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSchemes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListSchemesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSchemes>>> = ({ signal }) => listSchemes({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSchemes>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListSchemesQueryResult = NonNullable<Awaited<ReturnType<typeof listSchemes>>>
-export type ListSchemesQueryError = ErrorType<unknown>
+export const DeleteDiaryEntryResponse = zod.void()
 
 
 /**
  * @summary List government schemes
  */
+export const ListSchemesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "benefit": zod.string().nullish(),
+  "eligibility": zod.string().nullish(),
+  "applicationUrl": zod.string().nullish(),
+  "deadline": zod.coerce.date().nullish(),
+  "isActive": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListSchemesResponse = zod.array(ListSchemesResponseItem)
 
-export function useListSchemes<TData = Awaited<ReturnType<typeof listSchemes>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSchemes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListSchemesQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateSchemeUrl = () => {
-
-
-
-
-  return `/api/schemes`
-}
 
 /**
  * @summary Add a government scheme
  */
-export const createScheme = async (governmentSchemeInput: GovernmentSchemeInput, options?: RequestInit): Promise<GovernmentScheme> => {
+export const CreateSchemeBody = zod.object({
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "benefit": zod.string().optional(),
+  "eligibility": zod.string().optional(),
+  "applicationUrl": zod.string().optional(),
+  "deadline": zod.coerce.date().optional(),
+  "isActive": zod.boolean().optional()
+})
 
-  return customFetch<GovernmentScheme>(getCreateSchemeUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(governmentSchemeInput)
-  }
-);}
-
-
-
-
-export const getCreateSchemeMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createScheme>>, TError,{data: BodyType<GovernmentSchemeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createScheme>>, TError,{data: BodyType<GovernmentSchemeInput>}, TContext> => {
-
-const mutationKey = ['createScheme'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createScheme>>, {data: BodyType<GovernmentSchemeInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createScheme(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateSchemeMutationResult = NonNullable<Awaited<ReturnType<typeof createScheme>>>
-    export type CreateSchemeMutationBody = BodyType<GovernmentSchemeInput>
-    export type CreateSchemeMutationError = ErrorType<unknown>
-
-    /**
- * @summary Add a government scheme
- */
-export const useCreateScheme = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createScheme>>, TError,{data: BodyType<GovernmentSchemeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createScheme>>,
-        TError,
-        {data: BodyType<GovernmentSchemeInput>},
-        TContext
-      > => {
-      return useMutation(getCreateSchemeMutationOptions(options));
-    }
-
-export const getGetSchemeUrl = (id: number,) => {
-
-
-
-
-  return `/api/schemes/${id}`
-}
-
-/**
- * @summary Get scheme details
- */
-export const getScheme = async (id: number, options?: RequestInit): Promise<GovernmentScheme> => {
-
-  return customFetch<GovernmentScheme>(getGetSchemeUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetSchemeQueryKey = (id: number,) => {
-    return [
-    `/api/schemes/${id}`
-    ] as const;
-    }
-
-
-export const getGetSchemeQueryOptions = <TData = Awaited<ReturnType<typeof getScheme>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getScheme>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetSchemeQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getScheme>>> = ({ signal }) => getScheme(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScheme>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetSchemeQueryResult = NonNullable<Awaited<ReturnType<typeof getScheme>>>
-export type GetSchemeQueryError = ErrorType<unknown>
+export const CreateSchemeResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "benefit": zod.string().nullish(),
+  "eligibility": zod.string().nullish(),
+  "applicationUrl": zod.string().nullish(),
+  "deadline": zod.coerce.date().nullish(),
+  "isActive": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary Get scheme details
  */
+export const GetSchemeParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-export function useGetScheme<TData = Awaited<ReturnType<typeof getScheme>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getScheme>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const GetSchemeResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "benefit": zod.string().nullish(),
+  "eligibility": zod.string().nullish(),
+  "applicationUrl": zod.string().nullish(),
+  "deadline": zod.coerce.date().nullish(),
+  "isActive": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetSchemeQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getUpdateSchemeUrl = (id: number,) => {
-
-
-
-
-  return `/api/schemes/${id}`
-}
 
 /**
  * @summary Update scheme
  */
-export const updateScheme = async (id: number,
-    governmentSchemeUpdate: GovernmentSchemeUpdate, options?: RequestInit): Promise<GovernmentScheme> => {
+export const UpdateSchemeParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<GovernmentScheme>(getUpdateSchemeUrl(id),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(governmentSchemeUpdate)
-  }
-);}
+export const UpdateSchemeBody = zod.object({
+  "name": zod.string().optional(),
+  "description": zod.string().optional(),
+  "category": zod.string().optional(),
+  "benefit": zod.string().optional(),
+  "eligibility": zod.string().optional(),
+  "applicationUrl": zod.string().optional(),
+  "deadline": zod.coerce.date().optional(),
+  "isActive": zod.boolean().optional()
+})
 
+export const UpdateSchemeResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "benefit": zod.string().nullish(),
+  "eligibility": zod.string().nullish(),
+  "applicationUrl": zod.string().nullish(),
+  "deadline": zod.coerce.date().nullish(),
+  "isActive": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
 
-
-
-export const getUpdateSchemeMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateScheme>>, TError,{id: number;data: BodyType<GovernmentSchemeUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateScheme>>, TError,{id: number;data: BodyType<GovernmentSchemeUpdate>}, TContext> => {
-
-const mutationKey = ['updateScheme'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateScheme>>, {id: number;data: BodyType<GovernmentSchemeUpdate>}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  updateScheme(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateSchemeMutationResult = NonNullable<Awaited<ReturnType<typeof updateScheme>>>
-    export type UpdateSchemeMutationBody = BodyType<GovernmentSchemeUpdate>
-    export type UpdateSchemeMutationError = ErrorType<unknown>
-
-    /**
- * @summary Update scheme
- */
-export const useUpdateScheme = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateScheme>>, TError,{id: number;data: BodyType<GovernmentSchemeUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateScheme>>,
-        TError,
-        {id: number;data: BodyType<GovernmentSchemeUpdate>},
-        TContext
-      > => {
-      return useMutation(getUpdateSchemeMutationOptions(options));
-    }
-
-export const getDeleteSchemeUrl = (id: number,) => {
-
-
-
-
-  return `/api/schemes/${id}`
-}
 
 /**
  * @summary Delete scheme
  */
-export const deleteScheme = async (id: number, options?: RequestInit): Promise<void> => {
+export const DeleteSchemeParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<void>(getDeleteSchemeUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-export const getDeleteSchemeMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScheme>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteScheme>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteScheme'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteScheme>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteScheme(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteSchemeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteScheme>>>
-
-    export type DeleteSchemeMutationError = ErrorType<unknown>
-
-    /**
- * @summary Delete scheme
- */
-export const useDeleteScheme = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScheme>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteScheme>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteSchemeMutationOptions(options));
-    }
-
-export const getListLandListingsUrl = () => {
-
-
-
-
-  return `/api/land/listings`
-}
-
-/**
- * @summary List land marketplace listings
- */
-export const listLandListings = async ( options?: RequestInit): Promise<LandListing[]> => {
-
-  return customFetch<LandListing[]>(getListLandListingsUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListLandListingsQueryKey = () => {
-    return [
-    `/api/land/listings`
-    ] as const;
-    }
-
-
-export const getListLandListingsQueryOptions = <TData = Awaited<ReturnType<typeof listLandListings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listLandListings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListLandListingsQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listLandListings>>> = ({ signal }) => listLandListings({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listLandListings>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListLandListingsQueryResult = NonNullable<Awaited<ReturnType<typeof listLandListings>>>
-export type ListLandListingsQueryError = ErrorType<unknown>
+export const DeleteSchemeResponse = zod.void()
 
 
 /**
  * @summary List land marketplace listings
  */
+export const ListLandListingsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "listingType": zod.string(),
+  "area": zod.number(),
+  "areaUnit": zod.string(),
+  "price": zod.number(),
+  "priceUnit": zod.string(),
+  "district": zod.string(),
+  "village": zod.string().nullish(),
+  "state": zod.string(),
+  "soilType": zod.string().nullish(),
+  "waterSource": zod.string().nullish(),
+  "ownerName": zod.string(),
+  "ownerPhone": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "imageUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListLandListingsResponse = zod.array(ListLandListingsResponseItem)
 
-export function useListLandListings<TData = Awaited<ReturnType<typeof listLandListings>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listLandListings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListLandListingsQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateLandListingUrl = () => {
-
-
-
-
-  return `/api/land/listings`
-}
 
 /**
  * @summary Create a land listing
  */
-export const createLandListing = async (landListingInput: LandListingInput, options?: RequestInit): Promise<LandListing> => {
+export const CreateLandListingBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string(),
+  "listingType": zod.string(),
+  "area": zod.number(),
+  "areaUnit": zod.string(),
+  "price": zod.number(),
+  "priceUnit": zod.string(),
+  "district": zod.string(),
+  "village": zod.string().optional(),
+  "state": zod.string(),
+  "soilType": zod.string().optional(),
+  "waterSource": zod.string().optional(),
+  "ownerName": zod.string(),
+  "ownerPhone": zod.string().optional(),
+  "imageUrl": zod.string().optional()
+})
 
-  return customFetch<LandListing>(getCreateLandListingUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(landListingInput)
-  }
-);}
-
-
-
-
-export const getCreateLandListingMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createLandListing>>, TError,{data: BodyType<LandListingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createLandListing>>, TError,{data: BodyType<LandListingInput>}, TContext> => {
-
-const mutationKey = ['createLandListing'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createLandListing>>, {data: BodyType<LandListingInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createLandListing(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateLandListingMutationResult = NonNullable<Awaited<ReturnType<typeof createLandListing>>>
-    export type CreateLandListingMutationBody = BodyType<LandListingInput>
-    export type CreateLandListingMutationError = ErrorType<unknown>
-
-    /**
- * @summary Create a land listing
- */
-export const useCreateLandListing = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createLandListing>>, TError,{data: BodyType<LandListingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createLandListing>>,
-        TError,
-        {data: BodyType<LandListingInput>},
-        TContext
-      > => {
-      return useMutation(getCreateLandListingMutationOptions(options));
-    }
-
-export const getGetLandListingUrl = (id: number,) => {
-
-
-
-
-  return `/api/land/listings/${id}`
-}
-
-/**
- * @summary Get land listing
- */
-export const getLandListing = async (id: number, options?: RequestInit): Promise<LandListing> => {
-
-  return customFetch<LandListing>(getGetLandListingUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetLandListingQueryKey = (id: number,) => {
-    return [
-    `/api/land/listings/${id}`
-    ] as const;
-    }
-
-
-export const getGetLandListingQueryOptions = <TData = Awaited<ReturnType<typeof getLandListing>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLandListing>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetLandListingQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLandListing>>> = ({ signal }) => getLandListing(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLandListing>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetLandListingQueryResult = NonNullable<Awaited<ReturnType<typeof getLandListing>>>
-export type GetLandListingQueryError = ErrorType<unknown>
+export const CreateLandListingResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "listingType": zod.string(),
+  "area": zod.number(),
+  "areaUnit": zod.string(),
+  "price": zod.number(),
+  "priceUnit": zod.string(),
+  "district": zod.string(),
+  "village": zod.string().nullish(),
+  "state": zod.string(),
+  "soilType": zod.string().nullish(),
+  "waterSource": zod.string().nullish(),
+  "ownerName": zod.string(),
+  "ownerPhone": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "imageUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary Get land listing
  */
+export const GetLandListingParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-export function useGetLandListing<TData = Awaited<ReturnType<typeof getLandListing>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLandListing>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const GetLandListingResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "listingType": zod.string(),
+  "area": zod.number(),
+  "areaUnit": zod.string(),
+  "price": zod.number(),
+  "priceUnit": zod.string(),
+  "district": zod.string(),
+  "village": zod.string().nullish(),
+  "state": zod.string(),
+  "soilType": zod.string().nullish(),
+  "waterSource": zod.string().nullish(),
+  "ownerName": zod.string(),
+  "ownerPhone": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "imageUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetLandListingQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getUpdateLandListingUrl = (id: number,) => {
-
-
-
-
-  return `/api/land/listings/${id}`
-}
 
 /**
  * @summary Update land listing
  */
-export const updateLandListing = async (id: number,
-    landListingUpdate: LandListingUpdate, options?: RequestInit): Promise<LandListing> => {
+export const UpdateLandListingParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<LandListing>(getUpdateLandListingUrl(id),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(landListingUpdate)
-  }
-);}
+export const UpdateLandListingBody = zod.object({
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "price": zod.number().optional(),
+  "soilType": zod.string().optional(),
+  "waterSource": zod.string().optional(),
+  "isVerified": zod.boolean().optional(),
+  "imageUrl": zod.string().optional()
+})
 
+export const UpdateLandListingResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "listingType": zod.string(),
+  "area": zod.number(),
+  "areaUnit": zod.string(),
+  "price": zod.number(),
+  "priceUnit": zod.string(),
+  "district": zod.string(),
+  "village": zod.string().nullish(),
+  "state": zod.string(),
+  "soilType": zod.string().nullish(),
+  "waterSource": zod.string().nullish(),
+  "ownerName": zod.string(),
+  "ownerPhone": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "imageUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
-
-
-export const getUpdateLandListingMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateLandListing>>, TError,{id: number;data: BodyType<LandListingUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateLandListing>>, TError,{id: number;data: BodyType<LandListingUpdate>}, TContext> => {
-
-const mutationKey = ['updateLandListing'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateLandListing>>, {id: number;data: BodyType<LandListingUpdate>}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  updateLandListing(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateLandListingMutationResult = NonNullable<Awaited<ReturnType<typeof updateLandListing>>>
-    export type UpdateLandListingMutationBody = BodyType<LandListingUpdate>
-    export type UpdateLandListingMutationError = ErrorType<unknown>
-
-    /**
- * @summary Update land listing
- */
-export const useUpdateLandListing = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateLandListing>>, TError,{id: number;data: BodyType<LandListingUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateLandListing>>,
-        TError,
-        {id: number;data: BodyType<LandListingUpdate>},
-        TContext
-      > => {
-      return useMutation(getUpdateLandListingMutationOptions(options));
-    }
-
-export const getDeleteLandListingUrl = (id: number,) => {
-
-
-
-
-  return `/api/land/listings/${id}`
-}
 
 /**
  * @summary Delete land listing
  */
-export const deleteLandListing = async (id: number, options?: RequestInit): Promise<void> => {
+export const DeleteLandListingParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<void>(getDeleteLandListingUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-export const getDeleteLandListingMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLandListing>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteLandListing>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteLandListing'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLandListing>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteLandListing(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteLandListingMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLandListing>>>
-
-    export type DeleteLandListingMutationError = ErrorType<unknown>
-
-    /**
- * @summary Delete land listing
- */
-export const useDeleteLandListing = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLandListing>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteLandListing>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteLandListingMutationOptions(options));
-    }
-
-export const getListCommunityPostsUrl = () => {
-
-
-
-
-  return `/api/community/posts`
-}
-
-/**
- * @summary List community posts
- */
-export const listCommunityPosts = async ( options?: RequestInit): Promise<CommunityPost[]> => {
-
-  return customFetch<CommunityPost[]>(getListCommunityPostsUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListCommunityPostsQueryKey = () => {
-    return [
-    `/api/community/posts`
-    ] as const;
-    }
-
-
-export const getListCommunityPostsQueryOptions = <TData = Awaited<ReturnType<typeof listCommunityPosts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommunityPosts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListCommunityPostsQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommunityPosts>>> = ({ signal }) => listCommunityPosts({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCommunityPosts>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListCommunityPostsQueryResult = NonNullable<Awaited<ReturnType<typeof listCommunityPosts>>>
-export type ListCommunityPostsQueryError = ErrorType<unknown>
+export const DeleteLandListingResponse = zod.void()
 
 
 /**
  * @summary List community posts
  */
+export const ListCommunityPostsResponseItem = zod.object({
+  "id": zod.number(),
+  "authorName": zod.string(),
+  "authorRole": zod.string().nullish(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "likes": zod.number(),
+  "tags": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListCommunityPostsResponse = zod.array(ListCommunityPostsResponseItem)
 
-export function useListCommunityPosts<TData = Awaited<ReturnType<typeof listCommunityPosts>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommunityPosts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListCommunityPostsQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateCommunityPostUrl = () => {
-
-
-
-
-  return `/api/community/posts`
-}
 
 /**
  * @summary Create community post
  */
-export const createCommunityPost = async (communityPostInput: CommunityPostInput, options?: RequestInit): Promise<CommunityPost> => {
+export const CreateCommunityPostBody = zod.object({
+  "authorName": zod.string(),
+  "authorRole": zod.string().optional(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().optional(),
+  "tags": zod.string().optional()
+})
 
-  return customFetch<CommunityPost>(getCreateCommunityPostUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(communityPostInput)
-  }
-);}
-
-
-
-
-export const getCreateCommunityPostMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunityPost>>, TError,{data: BodyType<CommunityPostInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createCommunityPost>>, TError,{data: BodyType<CommunityPostInput>}, TContext> => {
-
-const mutationKey = ['createCommunityPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunityPost>>, {data: BodyType<CommunityPostInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createCommunityPost(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateCommunityPostMutationResult = NonNullable<Awaited<ReturnType<typeof createCommunityPost>>>
-    export type CreateCommunityPostMutationBody = BodyType<CommunityPostInput>
-    export type CreateCommunityPostMutationError = ErrorType<unknown>
-
-    /**
- * @summary Create community post
- */
-export const useCreateCommunityPost = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunityPost>>, TError,{data: BodyType<CommunityPostInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createCommunityPost>>,
-        TError,
-        {data: BodyType<CommunityPostInput>},
-        TContext
-      > => {
-      return useMutation(getCreateCommunityPostMutationOptions(options));
-    }
-
-export const getGetCommunityPostUrl = (id: number,) => {
-
-
-
-
-  return `/api/community/posts/${id}`
-}
-
-/**
- * @summary Get community post
- */
-export const getCommunityPost = async (id: number, options?: RequestInit): Promise<CommunityPost> => {
-
-  return customFetch<CommunityPost>(getGetCommunityPostUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetCommunityPostQueryKey = (id: number,) => {
-    return [
-    `/api/community/posts/${id}`
-    ] as const;
-    }
-
-
-export const getGetCommunityPostQueryOptions = <TData = Awaited<ReturnType<typeof getCommunityPost>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCommunityPost>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCommunityPostQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommunityPost>>> = ({ signal }) => getCommunityPost(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommunityPost>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetCommunityPostQueryResult = NonNullable<Awaited<ReturnType<typeof getCommunityPost>>>
-export type GetCommunityPostQueryError = ErrorType<unknown>
+export const CreateCommunityPostResponse = zod.object({
+  "id": zod.number(),
+  "authorName": zod.string(),
+  "authorRole": zod.string().nullish(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "likes": zod.number(),
+  "tags": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary Get community post
  */
+export const GetCommunityPostParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-export function useGetCommunityPost<TData = Awaited<ReturnType<typeof getCommunityPost>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCommunityPost>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const GetCommunityPostResponse = zod.object({
+  "id": zod.number(),
+  "authorName": zod.string(),
+  "authorRole": zod.string().nullish(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "likes": zod.number(),
+  "tags": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetCommunityPostQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getDeleteCommunityPostUrl = (id: number,) => {
-
-
-
-
-  return `/api/community/posts/${id}`
-}
 
 /**
  * @summary Delete community post
  */
-export const deleteCommunityPost = async (id: number, options?: RequestInit): Promise<void> => {
+export const DeleteCommunityPostParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<void>(getDeleteCommunityPostUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
+export const DeleteCommunityPostResponse = zod.void()
 
-
-  }
-);}
-
-
-
-
-export const getDeleteCommunityPostMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommunityPost>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteCommunityPost>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteCommunityPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCommunityPost>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteCommunityPost(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteCommunityPostMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCommunityPost>>>
-
-    export type DeleteCommunityPostMutationError = ErrorType<unknown>
-
-    /**
- * @summary Delete community post
- */
-export const useDeleteCommunityPost = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommunityPost>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteCommunityPost>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteCommunityPostMutationOptions(options));
-    }
-
-export const getLikeCommunityPostUrl = (id: number,) => {
-
-
-
-
-  return `/api/community/posts/${id}/like`
-}
 
 /**
  * @summary Like a community post
  */
-export const likeCommunityPost = async (id: number, options?: RequestInit): Promise<CommunityPost> => {
+export const LikeCommunityPostParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<CommunityPost>(getLikeCommunityPostUrl(id),
-  {
-    ...options,
-    method: 'POST'
-
-
-  }
-);}
-
-
-
-
-export const getLikeCommunityPostMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof likeCommunityPost>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof likeCommunityPost>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['likeCommunityPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof likeCommunityPost>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  likeCommunityPost(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LikeCommunityPostMutationResult = NonNullable<Awaited<ReturnType<typeof likeCommunityPost>>>
-
-    export type LikeCommunityPostMutationError = ErrorType<unknown>
-
-    /**
- * @summary Like a community post
- */
-export const useLikeCommunityPost = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof likeCommunityPost>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof likeCommunityPost>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getLikeCommunityPostMutationOptions(options));
-    }
-
-export const getListExpensesUrl = () => {
-
-
-
-
-  return `/api/expenses`
-}
-
-/**
- * @summary List expenses
- */
-export const listExpenses = async ( options?: RequestInit): Promise<Expense[]> => {
-
-  return customFetch<Expense[]>(getListExpensesUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListExpensesQueryKey = () => {
-    return [
-    `/api/expenses`
-    ] as const;
-    }
-
-
-export const getListExpensesQueryOptions = <TData = Awaited<ReturnType<typeof listExpenses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listExpenses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListExpensesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listExpenses>>> = ({ signal }) => listExpenses({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listExpenses>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListExpensesQueryResult = NonNullable<Awaited<ReturnType<typeof listExpenses>>>
-export type ListExpensesQueryError = ErrorType<unknown>
+export const LikeCommunityPostResponse = zod.object({
+  "id": zod.number(),
+  "authorName": zod.string(),
+  "authorRole": zod.string().nullish(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "likes": zod.number(),
+  "tags": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary List expenses
  */
+export const ListExpensesResponseItem = zod.object({
+  "id": zod.number(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "date": zod.coerce.date(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListExpensesResponse = zod.array(ListExpensesResponseItem)
 
-export function useListExpenses<TData = Awaited<ReturnType<typeof listExpenses>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listExpenses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListExpensesQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateExpenseUrl = () => {
-
-
-
-
-  return `/api/expenses`
-}
 
 /**
  * @summary Add an expense
  */
-export const createExpense = async (expenseInput: ExpenseInput, options?: RequestInit): Promise<Expense> => {
+export const CreateExpenseBody = zod.object({
+  "category": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "date": zod.coerce.date(),
+  "cropId": zod.number().optional(),
+  "cropName": zod.string().optional()
+})
 
-  return customFetch<Expense>(getCreateExpenseUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(expenseInput)
-  }
-);}
+export const CreateExpenseResponse = zod.object({
+  "id": zod.number(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "amount": zod.number(),
+  "date": zod.coerce.date(),
+  "cropId": zod.number().nullish(),
+  "cropName": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
-
-
-
-export const getCreateExpenseMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createExpense>>, TError,{data: BodyType<ExpenseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createExpense>>, TError,{data: BodyType<ExpenseInput>}, TContext> => {
-
-const mutationKey = ['createExpense'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createExpense>>, {data: BodyType<ExpenseInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createExpense(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateExpenseMutationResult = NonNullable<Awaited<ReturnType<typeof createExpense>>>
-    export type CreateExpenseMutationBody = BodyType<ExpenseInput>
-    export type CreateExpenseMutationError = ErrorType<unknown>
-
-    /**
- * @summary Add an expense
- */
-export const useCreateExpense = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createExpense>>, TError,{data: BodyType<ExpenseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createExpense>>,
-        TError,
-        {data: BodyType<ExpenseInput>},
-        TContext
-      > => {
-      return useMutation(getCreateExpenseMutationOptions(options));
-    }
-
-export const getDeleteExpenseUrl = (id: number,) => {
-
-
-
-
-  return `/api/expenses/${id}`
-}
 
 /**
  * @summary Delete an expense
  */
-export const deleteExpense = async (id: number, options?: RequestInit): Promise<void> => {
+export const DeleteExpenseParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<void>(getDeleteExpenseUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-export const getDeleteExpenseMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteExpense'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteExpense>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteExpense(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteExpenseMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExpense>>>
-
-    export type DeleteExpenseMutationError = ErrorType<unknown>
-
-    /**
- * @summary Delete an expense
- */
-export const useDeleteExpense = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteExpense>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteExpenseMutationOptions(options));
-    }
-
-export const getGetExpenseSummaryUrl = () => {
-
-
-
-
-  return `/api/expenses/summary`
-}
-
-/**
- * @summary Get expense summary by category
- */
-export const getExpenseSummary = async ( options?: RequestInit): Promise<ExpenseSummary> => {
-
-  return customFetch<ExpenseSummary>(getGetExpenseSummaryUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetExpenseSummaryQueryKey = () => {
-    return [
-    `/api/expenses/summary`
-    ] as const;
-    }
-
-
-export const getGetExpenseSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getExpenseSummary>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExpenseSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetExpenseSummaryQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getExpenseSummary>>> = ({ signal }) => getExpenseSummary({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getExpenseSummary>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetExpenseSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getExpenseSummary>>>
-export type GetExpenseSummaryQueryError = ErrorType<unknown>
+export const DeleteExpenseResponse = zod.void()
 
 
 /**
  * @summary Get expense summary by category
  */
-
-export function useGetExpenseSummary<TData = Awaited<ReturnType<typeof getExpenseSummary>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExpenseSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetExpenseSummaryQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getListSoilAnalysesUrl = () => {
-
-
-
-
-  return `/api/soil/analyses`
-}
-
-/**
- * @summary List soil analyses
- */
-export const listSoilAnalyses = async ( options?: RequestInit): Promise<SoilAnalysis[]> => {
-
-  return customFetch<SoilAnalysis[]>(getListSoilAnalysesUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListSoilAnalysesQueryKey = () => {
-    return [
-    `/api/soil/analyses`
-    ] as const;
-    }
-
-
-export const getListSoilAnalysesQueryOptions = <TData = Awaited<ReturnType<typeof listSoilAnalyses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSoilAnalyses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListSoilAnalysesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSoilAnalyses>>> = ({ signal }) => listSoilAnalyses({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSoilAnalyses>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListSoilAnalysesQueryResult = NonNullable<Awaited<ReturnType<typeof listSoilAnalyses>>>
-export type ListSoilAnalysesQueryError = ErrorType<unknown>
+export const GetExpenseSummaryResponse = zod.object({
+  "totalAmount": zod.number(),
+  "byCategory": zod.array(zod.object({
+  "category": zod.string(),
+  "total": zod.number()
+})),
+  "monthlyTotal": zod.number()
+})
 
 
 /**
  * @summary List soil analyses
  */
+export const ListSoilAnalysesResponseItem = zod.object({
+  "id": zod.number(),
+  "ph": zod.number().nullish(),
+  "nitrogen": zod.number().nullish(),
+  "phosphorus": zod.number().nullish(),
+  "potassium": zod.number().nullish(),
+  "organicCarbon": zod.number().nullish(),
+  "location": zod.string().nullish(),
+  "cropId": zod.number().nullish(),
+  "aiRecommendation": zod.string().nullish(),
+  "fertilizerSchedule": zod.string().nullish(),
+  "suitableCrops": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListSoilAnalysesResponse = zod.array(ListSoilAnalysesResponseItem)
 
-export function useListSoilAnalyses<TData = Awaited<ReturnType<typeof listSoilAnalyses>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSoilAnalyses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListSoilAnalysesQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateSoilAnalysisUrl = () => {
-
-
-
-
-  return `/api/soil/analyses`
-}
 
 /**
  * @summary Submit soil analysis and get AI recommendations
  */
-export const createSoilAnalysis = async (soilAnalysisInput: SoilAnalysisInput, options?: RequestInit): Promise<SoilAnalysis> => {
+export const CreateSoilAnalysisBody = zod.object({
+  "ph": zod.number().optional(),
+  "nitrogen": zod.number().optional(),
+  "phosphorus": zod.number().optional(),
+  "potassium": zod.number().optional(),
+  "organicCarbon": zod.number().optional(),
+  "location": zod.string().optional(),
+  "cropId": zod.number().optional()
+})
 
-  return customFetch<SoilAnalysis>(getCreateSoilAnalysisUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(soilAnalysisInput)
-  }
-);}
-
-
-
-
-export const getCreateSoilAnalysisMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSoilAnalysis>>, TError,{data: BodyType<SoilAnalysisInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createSoilAnalysis>>, TError,{data: BodyType<SoilAnalysisInput>}, TContext> => {
-
-const mutationKey = ['createSoilAnalysis'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSoilAnalysis>>, {data: BodyType<SoilAnalysisInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createSoilAnalysis(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateSoilAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof createSoilAnalysis>>>
-    export type CreateSoilAnalysisMutationBody = BodyType<SoilAnalysisInput>
-    export type CreateSoilAnalysisMutationError = ErrorType<unknown>
-
-    /**
- * @summary Submit soil analysis and get AI recommendations
- */
-export const useCreateSoilAnalysis = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSoilAnalysis>>, TError,{data: BodyType<SoilAnalysisInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createSoilAnalysis>>,
-        TError,
-        {data: BodyType<SoilAnalysisInput>},
-        TContext
-      > => {
-      return useMutation(getCreateSoilAnalysisMutationOptions(options));
-    }
-
-export const getListNotificationsUrl = () => {
-
-
-
-
-  return `/api/notifications`
-}
-
-/**
- * @summary List notifications
- */
-export const listNotifications = async ( options?: RequestInit): Promise<Notification[]> => {
-
-  return customFetch<Notification[]>(getListNotificationsUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListNotificationsQueryKey = () => {
-    return [
-    `/api/notifications`
-    ] as const;
-    }
-
-
-export const getListNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof listNotifications>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListNotificationsQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listNotifications>>> = ({ signal }) => listNotifications({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof listNotifications>>>
-export type ListNotificationsQueryError = ErrorType<unknown>
+export const CreateSoilAnalysisResponse = zod.object({
+  "id": zod.number(),
+  "ph": zod.number().nullish(),
+  "nitrogen": zod.number().nullish(),
+  "phosphorus": zod.number().nullish(),
+  "potassium": zod.number().nullish(),
+  "organicCarbon": zod.number().nullish(),
+  "location": zod.string().nullish(),
+  "cropId": zod.number().nullish(),
+  "aiRecommendation": zod.string().nullish(),
+  "fertilizerSchedule": zod.string().nullish(),
+  "suitableCrops": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary List notifications
  */
+export const ListNotificationsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "type": zod.string(),
+  "isRead": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem)
 
-export function useListNotifications<TData = Awaited<ReturnType<typeof listNotifications>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListNotificationsQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getMarkNotificationReadUrl = (id: number,) => {
-
-
-
-
-  return `/api/notifications/${id}/read`
-}
 
 /**
  * @summary Mark notification as read
  */
-export const markNotificationRead = async (id: number, options?: RequestInit): Promise<Notification> => {
+export const MarkNotificationReadParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<Notification>(getMarkNotificationReadUrl(id),
-  {
-    ...options,
-    method: 'POST'
+export const MarkNotificationReadResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "type": zod.string(),
+  "isRead": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
 
-
-  }
-);}
-
-
-
-
-export const getMarkNotificationReadMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markNotificationRead>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof markNotificationRead>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['markNotificationRead'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markNotificationRead>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  markNotificationRead(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type MarkNotificationReadMutationResult = NonNullable<Awaited<ReturnType<typeof markNotificationRead>>>
-
-    export type MarkNotificationReadMutationError = ErrorType<unknown>
-
-    /**
- * @summary Mark notification as read
- */
-export const useMarkNotificationRead = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markNotificationRead>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof markNotificationRead>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getMarkNotificationReadMutationOptions(options));
-    }
-
-export const getMarkAllNotificationsReadUrl = () => {
-
-
-
-
-  return `/api/notifications/read-all`
-}
 
 /**
  * @summary Mark all notifications as read
  */
-export const markAllNotificationsRead = async ( options?: RequestInit): Promise<BulkUpdateResult> => {
-
-  return customFetch<BulkUpdateResult>(getMarkAllNotificationsReadUrl(),
-  {
-    ...options,
-    method: 'POST'
-
-
-  }
-);}
-
-
-
-
-export const getMarkAllNotificationsReadMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markAllNotificationsRead>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof markAllNotificationsRead>>, TError,void, TContext> => {
-
-const mutationKey = ['markAllNotificationsRead'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markAllNotificationsRead>>, void> = () => {
-
-
-          return  markAllNotificationsRead(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type MarkAllNotificationsReadMutationResult = NonNullable<Awaited<ReturnType<typeof markAllNotificationsRead>>>
-
-    export type MarkAllNotificationsReadMutationError = ErrorType<unknown>
-
-    /**
- * @summary Mark all notifications as read
- */
-export const useMarkAllNotificationsRead = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markAllNotificationsRead>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof markAllNotificationsRead>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getMarkAllNotificationsReadMutationOptions(options));
-    }
-
-export const getListGeminiConversationsUrl = () => {
-
-
-
-
-  return `/api/gemini/conversations`
-}
-
-/**
- * @summary List all conversations
- */
-export const listGeminiConversations = async ( options?: RequestInit): Promise<GeminiConversation[]> => {
-
-  return customFetch<GeminiConversation[]>(getListGeminiConversationsUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListGeminiConversationsQueryKey = () => {
-    return [
-    `/api/gemini/conversations`
-    ] as const;
-    }
-
-
-export const getListGeminiConversationsQueryOptions = <TData = Awaited<ReturnType<typeof listGeminiConversations>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGeminiConversations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListGeminiConversationsQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGeminiConversations>>> = ({ signal }) => listGeminiConversations({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGeminiConversations>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListGeminiConversationsQueryResult = NonNullable<Awaited<ReturnType<typeof listGeminiConversations>>>
-export type ListGeminiConversationsQueryError = ErrorType<unknown>
+export const MarkAllNotificationsReadResponse = zod.object({
+  "count": zod.number()
+})
 
 
 /**
  * @summary List all conversations
  */
+export const ListGeminiConversationsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListGeminiConversationsResponse = zod.array(ListGeminiConversationsResponseItem)
 
-export function useListGeminiConversations<TData = Awaited<ReturnType<typeof listGeminiConversations>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGeminiConversations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListGeminiConversationsQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getCreateGeminiConversationUrl = () => {
-
-
-
-
-  return `/api/gemini/conversations`
-}
 
 /**
  * @summary Create a new conversation
  */
-export const createGeminiConversation = async (geminiConversationInput: GeminiConversationInput, options?: RequestInit): Promise<GeminiConversation> => {
+export const CreateGeminiConversationBody = zod.object({
+  "title": zod.string()
+})
 
-  return customFetch<GeminiConversation>(getCreateGeminiConversationUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(geminiConversationInput)
-  }
-);}
-
-
-
-
-export const getCreateGeminiConversationMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGeminiConversation>>, TError,{data: BodyType<GeminiConversationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createGeminiConversation>>, TError,{data: BodyType<GeminiConversationInput>}, TContext> => {
-
-const mutationKey = ['createGeminiConversation'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createGeminiConversation>>, {data: BodyType<GeminiConversationInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createGeminiConversation(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateGeminiConversationMutationResult = NonNullable<Awaited<ReturnType<typeof createGeminiConversation>>>
-    export type CreateGeminiConversationMutationBody = BodyType<GeminiConversationInput>
-    export type CreateGeminiConversationMutationError = ErrorType<unknown>
-
-    /**
- * @summary Create a new conversation
- */
-export const useCreateGeminiConversation = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGeminiConversation>>, TError,{data: BodyType<GeminiConversationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createGeminiConversation>>,
-        TError,
-        {data: BodyType<GeminiConversationInput>},
-        TContext
-      > => {
-      return useMutation(getCreateGeminiConversationMutationOptions(options));
-    }
-
-export const getGetGeminiConversationUrl = (id: number,) => {
-
-
-
-
-  return `/api/gemini/conversations/${id}`
-}
-
-/**
- * @summary Get conversation with messages
- */
-export const getGeminiConversation = async (id: number, options?: RequestInit): Promise<GeminiConversationWithMessages> => {
-
-  return customFetch<GeminiConversationWithMessages>(getGetGeminiConversationUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetGeminiConversationQueryKey = (id: number,) => {
-    return [
-    `/api/gemini/conversations/${id}`
-    ] as const;
-    }
-
-
-export const getGetGeminiConversationQueryOptions = <TData = Awaited<ReturnType<typeof getGeminiConversation>>, TError = ErrorType<GeminiError>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGeminiConversation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetGeminiConversationQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGeminiConversation>>> = ({ signal }) => getGeminiConversation(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGeminiConversation>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetGeminiConversationQueryResult = NonNullable<Awaited<ReturnType<typeof getGeminiConversation>>>
-export type GetGeminiConversationQueryError = ErrorType<GeminiError>
+export const CreateGeminiConversationResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "createdAt": zod.coerce.date()
+})
 
 
 /**
  * @summary Get conversation with messages
  */
+export const GetGeminiConversationParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-export function useGetGeminiConversation<TData = Awaited<ReturnType<typeof getGeminiConversation>>, TError = ErrorType<GeminiError>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGeminiConversation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const GetGeminiConversationResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "messages": zod.array(zod.object({
+  "id": zod.number(),
+  "conversationId": zod.number(),
+  "role": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+})
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetGeminiConversationQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getDeleteGeminiConversationUrl = (id: number,) => {
-
-
-
-
-  return `/api/gemini/conversations/${id}`
-}
 
 /**
  * @summary Delete a conversation
  */
-export const deleteGeminiConversation = async (id: number, options?: RequestInit): Promise<void> => {
+export const DeleteGeminiConversationParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<void>(getDeleteGeminiConversationUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-export const getDeleteGeminiConversationMutationOptions = <TError = ErrorType<GeminiError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGeminiConversation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteGeminiConversation>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteGeminiConversation'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGeminiConversation>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteGeminiConversation(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteGeminiConversationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGeminiConversation>>>
-
-    export type DeleteGeminiConversationMutationError = ErrorType<GeminiError>
-
-    /**
- * @summary Delete a conversation
- */
-export const useDeleteGeminiConversation = <TError = ErrorType<GeminiError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGeminiConversation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteGeminiConversation>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteGeminiConversationMutationOptions(options));
-    }
-
-export const getListGeminiMessagesUrl = (id: number,) => {
-
-
-
-
-  return `/api/gemini/conversations/${id}/messages`
-}
-
-/**
- * @summary List messages in a conversation
- */
-export const listGeminiMessages = async (id: number, options?: RequestInit): Promise<GeminiMessage[]> => {
-
-  return customFetch<GeminiMessage[]>(getListGeminiMessagesUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListGeminiMessagesQueryKey = (id: number,) => {
-    return [
-    `/api/gemini/conversations/${id}/messages`
-    ] as const;
-    }
-
-
-export const getListGeminiMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listGeminiMessages>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGeminiMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListGeminiMessagesQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGeminiMessages>>> = ({ signal }) => listGeminiMessages(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGeminiMessages>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListGeminiMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listGeminiMessages>>>
-export type ListGeminiMessagesQueryError = ErrorType<unknown>
+export const DeleteGeminiConversationResponse = zod.void()
 
 
 /**
  * @summary List messages in a conversation
  */
+export const ListGeminiMessagesParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-export function useListGeminiMessages<TData = Awaited<ReturnType<typeof listGeminiMessages>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGeminiMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const ListGeminiMessagesResponseItem = zod.object({
+  "id": zod.number(),
+  "conversationId": zod.number(),
+  "role": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListGeminiMessagesResponse = zod.array(ListGeminiMessagesResponseItem)
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListGeminiMessagesQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getSendGeminiMessageUrl = (id: number,) => {
-
-
-
-
-  return `/api/gemini/conversations/${id}/messages`
-}
 
 /**
  * @summary Send a message and receive an AI response (SSE stream)
  */
-export const sendGeminiMessage = async (id: number,
-    geminiMessageInput: GeminiMessageInput, options?: RequestInit): Promise<unknown> => {
+export const SendGeminiMessageParams = zod.object({
+  "id": zod.coerce.number()
+})
 
-  return customFetch<unknown>(getSendGeminiMessageUrl(id),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(geminiMessageInput)
-  }
-);}
+export const SendGeminiMessageBody = zod.object({
+  "content": zod.string()
+})
 
+export const SendGeminiMessageResponse = zod.unknown()
 
-
-
-export const getSendGeminiMessageMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendGeminiMessage>>, TError,{id: number;data: BodyType<GeminiMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof sendGeminiMessage>>, TError,{id: number;data: BodyType<GeminiMessageInput>}, TContext> => {
-
-const mutationKey = ['sendGeminiMessage'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendGeminiMessage>>, {id: number;data: BodyType<GeminiMessageInput>}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  sendGeminiMessage(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SendGeminiMessageMutationResult = NonNullable<Awaited<ReturnType<typeof sendGeminiMessage>>>
-    export type SendGeminiMessageMutationBody = BodyType<GeminiMessageInput>
-    export type SendGeminiMessageMutationError = ErrorType<unknown>
-
-    /**
- * @summary Send a message and receive an AI response (SSE stream)
- */
-export const useSendGeminiMessage = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendGeminiMessage>>, TError,{id: number;data: BodyType<GeminiMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof sendGeminiMessage>>,
-        TError,
-        {id: number;data: BodyType<GeminiMessageInput>},
-        TContext
-      > => {
-      return useMutation(getSendGeminiMessageMutationOptions(options));
-    }
-
-export const getGenerateGeminiImageUrl = () => {
-
-
-
-
-  return `/api/gemini/generate-image`
-}
 
 /**
  * @summary Generate an image from a text prompt
  */
-export const generateGeminiImage = async (geminiImageInput: GeminiImageInput, options?: RequestInit): Promise<GeminiImageOutput> => {
+export const GenerateGeminiImageBody = zod.object({
+  "prompt": zod.string()
+})
 
-  return customFetch<GeminiImageOutput>(getGenerateGeminiImageUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(geminiImageInput)
-  }
-);}
+export const GenerateGeminiImageResponse = zod.object({
+  "b64_json": zod.string(),
+  "mimeType": zod.string()
+})
 
-
-
-
-export const getGenerateGeminiImageMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateGeminiImage>>, TError,{data: BodyType<GeminiImageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof generateGeminiImage>>, TError,{data: BodyType<GeminiImageInput>}, TContext> => {
-
-const mutationKey = ['generateGeminiImage'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateGeminiImage>>, {data: BodyType<GeminiImageInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  generateGeminiImage(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type GenerateGeminiImageMutationResult = NonNullable<Awaited<ReturnType<typeof generateGeminiImage>>>
-    export type GenerateGeminiImageMutationBody = BodyType<GeminiImageInput>
-    export type GenerateGeminiImageMutationError = ErrorType<unknown>
-
-    /**
- * @summary Generate an image from a text prompt
- */
-export const useGenerateGeminiImage = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateGeminiImage>>, TError,{data: BodyType<GeminiImageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof generateGeminiImage>>,
-        TError,
-        {data: BodyType<GeminiImageInput>},
-        TContext
-      > => {
-      return useMutation(getGenerateGeminiImageMutationOptions(options));
-    }
 

@@ -1,0 +1,1 @@
+{"version":3,"file":"expenseInput.d.ts","sourceRoot":"","sources":["../../../src/generated/types/expenseInput.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAEH,MAAM,WAAW,YAAY;IAC3B,QAAQ,EAAE,MAAM,CAAC;IACjB,WAAW,EAAE,MAAM,CAAC;IACpB,MAAM,EAAE,MAAM,CAAC;IACf,IAAI,EAAE,IAAI,CAAC;IACX,MAAM,CAAC,EAAE,MAAM,CAAC;IAChB,QAAQ,CAAC,EAAE,MAAM,CAAC;CACnB"}

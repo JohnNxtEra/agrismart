@@ -1,0 +1,1867 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: AgriSmart API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: crops
+    description: Crop management
+  - name: disease
+    description: AI disease detection
+  - name: market
+    description: Market prices and MSP
+  - name: irrigation
+    description: Smart irrigation scheduling
+  - name: diary
+    description: Farm diary entries
+  - name: schemes
+    description: Government schemes
+  - name: land
+    description: Land marketplace
+  - name: community
+    description: Farmer community
+  - name: expenses
+    description: Expense tracking
+  - name: soil
+    description: Soil analysis
+  - name: notifications
+    description: Notifications
+  - name: dashboard
+    description: Dashboard summary
+  - name: gemini
+    description: Gemini AI chat and image operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ─── Dashboard ────────────────────────────────────────────────
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  # ─── Crops ────────────────────────────────────────────────────
+  /crops:
+    get:
+      operationId: listCrops
+      tags: [crops]
+      summary: List all crops for the farm
+      responses:
+        "200":
+          description: List of crops
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Crop"
+    post:
+      operationId: createCrop
+      tags: [crops]
+      summary: Add a new crop
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CropInput"
+      responses:
+        "201":
+          description: Created crop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Crop"
+  /crops/{id}:
+    get:
+      operationId: getCrop
+      tags: [crops]
+      summary: Get crop by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Crop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Crop"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCrop
+      tags: [crops]
+      summary: Update a crop
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CropUpdate"
+      responses:
+        "200":
+          description: Updated crop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Crop"
+    delete:
+      operationId: deleteCrop
+      tags: [crops]
+      summary: Delete a crop
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Disease Detection ────────────────────────────────────────
+  /disease/detections:
+    get:
+      operationId: listDiseaseDetections
+      tags: [disease]
+      summary: List disease detection history
+      responses:
+        "200":
+          description: List of detections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DiseaseDetection"
+    post:
+      operationId: createDiseaseDetection
+      tags: [disease]
+      summary: Analyze crop image for disease using Gemini Vision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiseaseDetectionInput"
+      responses:
+        "201":
+          description: Detection result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiseaseDetection"
+  /disease/detections/{id}:
+    get:
+      operationId: getDiseaseDetection
+      tags: [disease]
+      summary: Get detection result
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Detection result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiseaseDetection"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ─── Market Prices / MSP ──────────────────────────────────────
+  /market/prices:
+    get:
+      operationId: listMarketPrices
+      tags: [market]
+      summary: List MSP and market prices
+      responses:
+        "200":
+          description: Market prices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketPrice"
+    post:
+      operationId: createMarketPrice
+      tags: [market]
+      summary: Add a market price entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarketPriceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketPrice"
+  /market/summary:
+    get:
+      operationId: getMarketSummary
+      tags: [market]
+      summary: Get market summary with top movers and recommendations
+      responses:
+        "200":
+          description: Market summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketSummary"
+
+  # ─── Irrigation ───────────────────────────────────────────────
+  /irrigation/schedules:
+    get:
+      operationId: listIrrigationSchedules
+      tags: [irrigation]
+      summary: List irrigation schedules
+      responses:
+        "200":
+          description: Schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IrrigationSchedule"
+    post:
+      operationId: createIrrigationSchedule
+      tags: [irrigation]
+      summary: Create irrigation schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IrrigationScheduleInput"
+      responses:
+        "201":
+          description: Created schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IrrigationSchedule"
+  /irrigation/schedules/{id}:
+    patch:
+      operationId: updateIrrigationSchedule
+      tags: [irrigation]
+      summary: Update irrigation schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IrrigationScheduleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IrrigationSchedule"
+    delete:
+      operationId: deleteIrrigationSchedule
+      tags: [irrigation]
+      summary: Delete irrigation schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Farm Diary ───────────────────────────────────────────────
+  /diary/entries:
+    get:
+      operationId: listDiaryEntries
+      tags: [diary]
+      summary: List farm diary entries
+      responses:
+        "200":
+          description: Diary entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DiaryEntry"
+    post:
+      operationId: createDiaryEntry
+      tags: [diary]
+      summary: Create a diary entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiaryEntryInput"
+      responses:
+        "201":
+          description: Created entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiaryEntry"
+  /diary/entries/{id}:
+    get:
+      operationId: getDiaryEntry
+      tags: [diary]
+      summary: Get diary entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Diary entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiaryEntry"
+    delete:
+      operationId: deleteDiaryEntry
+      tags: [diary]
+      summary: Delete diary entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Government Schemes ───────────────────────────────────────
+  /schemes:
+    get:
+      operationId: listSchemes
+      tags: [schemes]
+      summary: List government schemes
+      responses:
+        "200":
+          description: Schemes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GovernmentScheme"
+    post:
+      operationId: createScheme
+      tags: [schemes]
+      summary: Add a government scheme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GovernmentSchemeInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernmentScheme"
+  /schemes/{id}:
+    get:
+      operationId: getScheme
+      tags: [schemes]
+      summary: Get scheme details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Scheme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernmentScheme"
+    patch:
+      operationId: updateScheme
+      tags: [schemes]
+      summary: Update scheme
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GovernmentSchemeUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernmentScheme"
+    delete:
+      operationId: deleteScheme
+      tags: [schemes]
+      summary: Delete scheme
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Land Marketplace ─────────────────────────────────────────
+  /land/listings:
+    get:
+      operationId: listLandListings
+      tags: [land]
+      summary: List land marketplace listings
+      responses:
+        "200":
+          description: Listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LandListing"
+    post:
+      operationId: createLandListing
+      tags: [land]
+      summary: Create a land listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LandListingInput"
+      responses:
+        "201":
+          description: Created listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LandListing"
+  /land/listings/{id}:
+    get:
+      operationId: getLandListing
+      tags: [land]
+      summary: Get land listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LandListing"
+    patch:
+      operationId: updateLandListing
+      tags: [land]
+      summary: Update land listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LandListingUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LandListing"
+    delete:
+      operationId: deleteLandListing
+      tags: [land]
+      summary: Delete land listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Community ────────────────────────────────────────────────
+  /community/posts:
+    get:
+      operationId: listCommunityPosts
+      tags: [community]
+      summary: List community posts
+      responses:
+        "200":
+          description: Posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommunityPost"
+    post:
+      operationId: createCommunityPost
+      tags: [community]
+      summary: Create community post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommunityPostInput"
+      responses:
+        "201":
+          description: Created post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityPost"
+  /community/posts/{id}:
+    get:
+      operationId: getCommunityPost
+      tags: [community]
+      summary: Get community post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityPost"
+    delete:
+      operationId: deleteCommunityPost
+      tags: [community]
+      summary: Delete community post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+  /community/posts/{id}/like:
+    post:
+      operationId: likeCommunityPost
+      tags: [community]
+      summary: Like a community post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityPost"
+
+  # ─── Expenses ─────────────────────────────────────────────────
+  /expenses:
+    get:
+      operationId: listExpenses
+      tags: [expenses]
+      summary: List expenses
+      responses:
+        "200":
+          description: Expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      summary: Add an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "201":
+          description: Created expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+  /expenses/{id}:
+    delete:
+      operationId: deleteExpense
+      tags: [expenses]
+      summary: Delete an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+  /expenses/summary:
+    get:
+      operationId: getExpenseSummary
+      tags: [expenses]
+      summary: Get expense summary by category
+      responses:
+        "200":
+          description: Expense summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseSummary"
+
+  # ─── Soil Analysis ────────────────────────────────────────────
+  /soil/analyses:
+    get:
+      operationId: listSoilAnalyses
+      tags: [soil]
+      summary: List soil analyses
+      responses:
+        "200":
+          description: Soil analyses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SoilAnalysis"
+    post:
+      operationId: createSoilAnalysis
+      tags: [soil]
+      summary: Submit soil analysis and get AI recommendations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SoilAnalysisInput"
+      responses:
+        "201":
+          description: Analysis with AI recommendations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SoilAnalysis"
+
+  # ─── Notifications ────────────────────────────────────────────
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Count of updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkUpdateResult"
+
+  # ─── Gemini AI ────────────────────────────────────────────────
+  /gemini/conversations:
+    get:
+      operationId: listGeminiConversations
+      tags: [gemini]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiConversation"
+    post:
+      operationId: createGeminiConversation
+      tags: [gemini]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeminiConversationInput"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversation"
+  /gemini/conversations/{id}:
+    get:
+      operationId: getGeminiConversation
+      tags: [gemini]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+    delete:
+      operationId: deleteGeminiConversation
+      tags: [gemini]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+  /gemini/conversations/{id}/messages:
+    get:
+      operationId: listGeminiMessages
+      tags: [gemini]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiMessage"
+    post:
+      operationId: sendGeminiMessage
+      tags: [gemini]
+      summary: Send a message and receive an AI response (SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeminiMessageInput"
+      responses:
+        "200":
+          description: SSE stream of assistant response chunks
+          content:
+            text/event-stream: {}
+  /gemini/generate-image:
+    post:
+      operationId: generateGeminiImage
+      tags: [gemini]
+      summary: Generate an image from a text prompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeminiImageInput"
+      responses:
+        "200":
+          description: Generated image data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiImageOutput"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    BulkUpdateResult:
+      type: object
+      properties:
+        count:
+          type: integer
+      required:
+        - count
+
+    # ─── Dashboard ─────────────────────────────────────────
+    DashboardSummary:
+      type: object
+      properties:
+        totalCrops:
+          type: integer
+        activeIrrigations:
+          type: integer
+        pendingNotifications:
+          type: integer
+        recentDetections:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiseaseDetection"
+        topMarketPrices:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarketPrice"
+        monthlyExpenseTotal:
+          type: number
+        upcomingSchedules:
+          type: array
+          items:
+            $ref: "#/components/schemas/IrrigationSchedule"
+      required:
+        - totalCrops
+        - activeIrrigations
+        - pendingNotifications
+        - recentDetections
+        - topMarketPrices
+        - monthlyExpenseTotal
+        - upcomingSchedules
+
+    # ─── Crops ─────────────────────────────────────────────
+    Crop:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        variety:
+          type: ["string", "null"]
+        season:
+          type: string
+        sowingDate:
+          type: ["string", "null"]
+          format: date
+        harvestDate:
+          type: ["string", "null"]
+          format: date
+        area:
+          type: ["number", "null"]
+        areaUnit:
+          type: ["string", "null"]
+        status:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - season
+        - status
+        - createdAt
+
+    CropInput:
+      type: object
+      properties:
+        name:
+          type: string
+        variety:
+          type: string
+        season:
+          type: string
+        sowingDate:
+          type: string
+          format: date
+        harvestDate:
+          type: string
+          format: date
+        area:
+          type: number
+        areaUnit:
+          type: string
+        status:
+          type: string
+        notes:
+          type: string
+      required:
+        - name
+        - season
+        - status
+
+    CropUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        variety:
+          type: string
+        season:
+          type: string
+        sowingDate:
+          type: string
+          format: date
+        harvestDate:
+          type: string
+          format: date
+        area:
+          type: number
+        areaUnit:
+          type: string
+        status:
+          type: string
+        notes:
+          type: string
+
+    # ─── Disease Detection ─────────────────────────────────
+    DiseaseDetection:
+      type: object
+      properties:
+        id:
+          type: integer
+        cropName:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        imageBase64:
+          type: ["string", "null"]
+        diseaseName:
+          type: ["string", "null"]
+        confidence:
+          type: ["number", "null"]
+        severity:
+          type: ["string", "null"]
+        symptoms:
+          type: ["string", "null"]
+        organicTreatment:
+          type: ["string", "null"]
+        chemicalTreatment:
+          type: ["string", "null"]
+        fertilizerRecommendation:
+          type: ["string", "null"]
+        preventiveMeasures:
+          type: ["string", "null"]
+        recoveryTime:
+          type: ["string", "null"]
+        aiResponse:
+          type: ["string", "null"]
+        aiResponseTelugu:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - cropName
+        - createdAt
+
+    DiseaseDetectionInput:
+      type: object
+      properties:
+        cropName:
+          type: string
+        imageBase64:
+          type: string
+        language:
+          type: string
+      required:
+        - cropName
+        - imageBase64
+
+    # ─── Market Prices ─────────────────────────────────────
+    MarketPrice:
+      type: object
+      properties:
+        id:
+          type: integer
+        cropName:
+          type: string
+        mspPrice:
+          type: ["number", "null"]
+        marketPrice:
+          type: number
+        unit:
+          type: string
+        market:
+          type: string
+        district:
+          type: ["string", "null"]
+        state:
+          type: ["string", "null"]
+        trend:
+          type: ["string", "null"]
+        date:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - cropName
+        - marketPrice
+        - unit
+        - market
+        - date
+        - createdAt
+
+    MarketPriceInput:
+      type: object
+      properties:
+        cropName:
+          type: string
+        mspPrice:
+          type: number
+        marketPrice:
+          type: number
+        unit:
+          type: string
+        market:
+          type: string
+        district:
+          type: string
+        state:
+          type: string
+        trend:
+          type: string
+        date:
+          type: string
+          format: date
+      required:
+        - cropName
+        - marketPrice
+        - unit
+        - market
+        - date
+
+    MarketSummary:
+      type: object
+      properties:
+        topPrices:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarketPrice"
+        trending:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarketPrice"
+        averageMsp:
+          type: number
+        lastUpdated:
+          type: string
+          format: date-time
+      required:
+        - topPrices
+        - trending
+        - averageMsp
+        - lastUpdated
+
+    # ─── Irrigation ────────────────────────────────────────
+    IrrigationSchedule:
+      type: object
+      properties:
+        id:
+          type: integer
+        cropId:
+          type: ["integer", "null"]
+        cropName:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        waterAmount:
+          type: ["number", "null"]
+        method:
+          type: string
+        status:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - cropName
+        - scheduledAt
+        - durationMinutes
+        - method
+        - status
+        - createdAt
+
+    IrrigationScheduleInput:
+      type: object
+      properties:
+        cropId:
+          type: integer
+        cropName:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        waterAmount:
+          type: number
+        method:
+          type: string
+        status:
+          type: string
+        notes:
+          type: string
+      required:
+        - cropName
+        - scheduledAt
+        - durationMinutes
+        - method
+        - status
+
+    IrrigationScheduleUpdate:
+      type: object
+      properties:
+        scheduledAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        waterAmount:
+          type: number
+        method:
+          type: string
+        status:
+          type: string
+        notes:
+          type: string
+
+    # ─── Farm Diary ────────────────────────────────────────
+    DiaryEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        cropId:
+          type: ["integer", "null"]
+        cropName:
+          type: ["string", "null"]
+        weather:
+          type: ["string", "null"]
+        temperature:
+          type: ["number", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        entryDate:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - content
+        - category
+        - entryDate
+        - createdAt
+
+    DiaryEntryInput:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        cropId:
+          type: integer
+        cropName:
+          type: string
+        weather:
+          type: string
+        temperature:
+          type: number
+        imageUrl:
+          type: string
+        entryDate:
+          type: string
+          format: date
+      required:
+        - title
+        - content
+        - category
+        - entryDate
+
+    # ─── Government Schemes ────────────────────────────────
+    GovernmentScheme:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        benefit:
+          type: ["string", "null"]
+        eligibility:
+          type: ["string", "null"]
+        applicationUrl:
+          type: ["string", "null"]
+        deadline:
+          type: ["string", "null"]
+          format: date
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - category
+        - isActive
+        - createdAt
+
+    GovernmentSchemeInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        benefit:
+          type: string
+        eligibility:
+          type: string
+        applicationUrl:
+          type: string
+        deadline:
+          type: string
+          format: date
+        isActive:
+          type: boolean
+      required:
+        - name
+        - description
+        - category
+
+    GovernmentSchemeUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        benefit:
+          type: string
+        eligibility:
+          type: string
+        applicationUrl:
+          type: string
+        deadline:
+          type: string
+          format: date
+        isActive:
+          type: boolean
+
+    # ─── Land Marketplace ──────────────────────────────────
+    LandListing:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        listingType:
+          type: string
+        area:
+          type: number
+        areaUnit:
+          type: string
+        price:
+          type: number
+        priceUnit:
+          type: string
+        district:
+          type: string
+        village:
+          type: ["string", "null"]
+        state:
+          type: string
+        soilType:
+          type: ["string", "null"]
+        waterSource:
+          type: ["string", "null"]
+        ownerName:
+          type: string
+        ownerPhone:
+          type: ["string", "null"]
+        isVerified:
+          type: boolean
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - description
+        - listingType
+        - area
+        - areaUnit
+        - price
+        - priceUnit
+        - district
+        - state
+        - ownerName
+        - isVerified
+        - createdAt
+
+    LandListingInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        listingType:
+          type: string
+        area:
+          type: number
+        areaUnit:
+          type: string
+        price:
+          type: number
+        priceUnit:
+          type: string
+        district:
+          type: string
+        village:
+          type: string
+        state:
+          type: string
+        soilType:
+          type: string
+        waterSource:
+          type: string
+        ownerName:
+          type: string
+        ownerPhone:
+          type: string
+        imageUrl:
+          type: string
+      required:
+        - title
+        - description
+        - listingType
+        - area
+        - areaUnit
+        - price
+        - priceUnit
+        - district
+        - state
+        - ownerName
+
+    LandListingUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        soilType:
+          type: string
+        waterSource:
+          type: string
+        isVerified:
+          type: boolean
+        imageUrl:
+          type: string
+
+    # ─── Community ─────────────────────────────────────────
+    CommunityPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        authorName:
+          type: string
+        authorRole:
+          type: ["string", "null"]
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        likes:
+          type: integer
+        tags:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - authorName
+        - title
+        - content
+        - category
+        - likes
+        - createdAt
+
+    CommunityPostInput:
+      type: object
+      properties:
+        authorName:
+          type: string
+        authorRole:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+        tags:
+          type: string
+      required:
+        - authorName
+        - title
+        - content
+        - category
+
+    # ─── Expenses ──────────────────────────────────────────
+    Expense:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+        cropId:
+          type: ["integer", "null"]
+        cropName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - category
+        - description
+        - amount
+        - date
+        - createdAt
+
+    ExpenseInput:
+      type: object
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+        cropId:
+          type: integer
+        cropName:
+          type: string
+      required:
+        - category
+        - description
+        - amount
+        - date
+
+    ExpenseSummary:
+      type: object
+      properties:
+        totalAmount:
+          type: number
+        byCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExpenseCategoryTotal"
+        monthlyTotal:
+          type: number
+      required:
+        - totalAmount
+        - byCategory
+        - monthlyTotal
+
+    ExpenseCategoryTotal:
+      type: object
+      properties:
+        category:
+          type: string
+        total:
+          type: number
+      required:
+        - category
+        - total
+
+    # ─── Soil Analysis ─────────────────────────────────────
+    SoilAnalysis:
+      type: object
+      properties:
+        id:
+          type: integer
+        ph:
+          type: ["number", "null"]
+        nitrogen:
+          type: ["number", "null"]
+        phosphorus:
+          type: ["number", "null"]
+        potassium:
+          type: ["number", "null"]
+        organicCarbon:
+          type: ["number", "null"]
+        location:
+          type: ["string", "null"]
+        cropId:
+          type: ["integer", "null"]
+        aiRecommendation:
+          type: ["string", "null"]
+        fertilizerSchedule:
+          type: ["string", "null"]
+        suitableCrops:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - createdAt
+
+    SoilAnalysisInput:
+      type: object
+      properties:
+        ph:
+          type: number
+        nitrogen:
+          type: number
+        phosphorus:
+          type: number
+        potassium:
+          type: number
+        organicCarbon:
+          type: number
+        location:
+          type: string
+        cropId:
+          type: integer
+
+    # ─── Notifications ─────────────────────────────────────
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - message
+        - type
+        - isRead
+        - createdAt
+
+    # ─── Gemini ────────────────────────────────────────────
+    GeminiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+
+    GeminiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+
+    GeminiConversationInput:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+
+    GeminiMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    GeminiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeminiMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+
+    GeminiImageInput:
+      type: object
+      properties:
+        prompt:
+          type: string
+      required:
+        - prompt
+
+    GeminiImageOutput:
+      type: object
+      properties:
+        b64_json:
+          type: string
+        mimeType:
+          type: string
+      required:
+        - b64_json
+        - mimeType
+
+    GeminiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

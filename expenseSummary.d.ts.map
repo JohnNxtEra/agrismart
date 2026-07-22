@@ -1,0 +1,1 @@
+{"version":3,"file":"expenseSummary.d.ts","sourceRoot":"","sources":["../../../src/generated/types/expenseSummary.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,oBAAoB,EAAE,MAAM,wBAAwB,CAAC;AAEnE,MAAM,WAAW,cAAc;IAC7B,WAAW,EAAE,MAAM,CAAC;IACpB,UAAU,EAAE,oBAAoB,EAAE,CAAC;IACnC,YAAY,EAAE,MAAM,CAAC;CACtB"}

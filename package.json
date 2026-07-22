@@ -1,11 +1,14 @@
 {
-  "name": "@workspace/api-spec",
+  "name": "@workspace/scripts",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "codegen": "orval --config ./orval.config.ts && pnpm -w run typecheck:libs"
+    "hello": "tsx ./src/hello.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "orval": "^8.18.0"
+    "@types/node": "catalog:",
+    "tsx": "catalog:"
   }
 }
